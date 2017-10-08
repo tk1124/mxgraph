@@ -22,6 +22,8 @@ namespace ConverterSample
                 return;
             }
 
+            LoadStencils();
+
             ConvertToPng(args[0]);
 
             if (args.Length < 2)
@@ -71,9 +73,32 @@ namespace ConverterSample
             var graph = new mxGraph();
             codec.Decode(doc.DocumentElement, graph.Model);
 
-            Image img = mxCellRenderer.CreateImage(graph, null, 0.5, Color.White, true, new mxRectangle(0, 0, 872, 564));
+            Image img = mxCellRenderer.CreateImage(graph, null, 1, Color.White, true, new mxRectangle(0, 0, 1100, 850));
 
             img.Save(path, ImageFormat.Png);
+        }
+
+        static void LoadStencils()
+        {
+            const string StencilAws3Path = @"D:\Users\tetsu\Documents\20171007_drawio-sample\drawio\war\stencils\aws3.xml";
+
+            var doc = mxUtils.ParseXml(mxUtils.ReadFile(StencilAws3Path));
+
+            var rootName = doc.DocumentElement.GetAttribute("name");
+            foreach (XmlNode node in doc.FirstChild.ChildNodes)
+            {
+                var element = (XmlElement)node;
+                var stencil = new mxStencil(element);
+
+                var name = element.GetAttribute("name")
+                    .Replace(' ', '_')
+                    .ToLower();
+                if (!string.IsNullOrWhiteSpace(rootName))
+                {
+                    name = rootName + "." + name;
+                }
+                mxStencilRegistry.AddStencil(name, stencil);
+            }
         }
     }
 }
